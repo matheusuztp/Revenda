@@ -1,0 +1,176 @@
+USE [bar]
+GO
+/****** Object:  Table [dbo].[cliente]    Script Date: 24/06/2022 11:01:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[cliente](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[nome] [varchar](50) NOT NULL,
+	[idade] [int] NULL,
+	[recorde] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[venda]    Script Date: 24/06/2022 11:01:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[venda](
+	[numero] [int] IDENTITY(1,1) NOT NULL,
+	[clienteID] [int] NOT NULL,
+	[observacao] [varchar](100) NULL,
+	[total] [decimal](5, 2) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[numero] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[pedidoClienteNome]    Script Date: 24/06/2022 11:01:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create view [dbo].[pedidoClienteNome] as
+select numero,
+		clienteID,
+		nome,
+		observacao,
+		total
+from venda
+left join cliente on cliente.id = venda.clienteID
+GO
+/****** Object:  Table [dbo].[entretenimento]    Script Date: 24/06/2022 11:01:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[entretenimento](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[descricao] [varchar](50) NOT NULL,
+	[tempo] [int] NULL,
+	[valor] [decimal](4, 2) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[produto]    Script Date: 24/06/2022 11:01:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[produto](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[descricao] [varchar](50) NOT NULL,
+	[valor] [decimal](4, 2) NOT NULL,
+	[saldoEstoque] [int] NOT NULL,
+	[tipo] [varchar](1) NOT NULL,
+	[unidade] [varchar](10) NOT NULL,
+	[volume] [decimal](5, 3) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[vendaItens]    Script Date: 24/06/2022 11:01:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[vendaItens](
+	[vendaID] [int] NOT NULL,
+	[produtoID] [int] NULL,
+	[quantidade] [int] NULL,
+	[valorProduto] [decimal](4, 2) NULL,
+	[tipo] [varchar](1) NULL
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vendaItensDescricao]    Script Date: 24/06/2022 11:01:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE view [dbo].[vendaItensDescricao] as
+select vi.vendaID,
+		vi.produtoID,
+		case when vi.tipo = 'P' then p.descricao else e.descricao end as descricao,
+		vi.quantidade,
+		vi.valorProduto,
+		vi.tipo
+from vendaItens vi
+left join produto p on p.id = vi.produtoID
+left join entretenimento e on e.id = vi.produtoID
+GO
+CREATE INDEX idx_CLIENTE_ID ON CLIENTE(ID)
+GO
+CREATE INDEX idx_PRODUTO_ID ON PRODUTO(ID)
+GO
+CREATE INDEX idx_ENTRETENIMENTO_ID ON ENTRETENIMENTO(ID)
+GO
+CREATE INDEX idx_VENDA_ID ON VENDA(NUMERO)
+GO
+-- Inserindo clientes no banco
+insert into cliente (nome, idade, recorde) values ('Toninho da Silva',43,11)
+GO
+insert into cliente (nome, idade, recorde) values ('Bette Ferreira',52,16)
+GO
+insert into cliente (nome, idade, recorde) values ('Duduzinho do Campo',38,6)
+GO
+insert into cliente (nome, idade, recorde) values ('Zé da Villa',65,23)
+GO
+insert into cliente (nome, idade, recorde) values ('Claudinei',46,15)
+GO
+
+-- Inserindo bebidas 
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Cachaça boa', 'Litros', 1.2, 3.50, 15, 'B')
+GO
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Pinga Braba', 'Litros', 1, 2.50, 12, 'B')
+GO
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Conhaque de Alcatrão', 'Litros', 0.8, 4.00, 10, 'B')
+GO
+
+-- Inserindo doces
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Paçoquinha', 'Un', null, 5.00, 10, 'D')
+GO
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Doce de abóbora', 'Un', null, 2.50, 6, 'D')
+GO
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Pé de moleque', 'Un', null, 2.00, 5, 'D')
+GO
+
+-- Inserindo petiscos
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Amendoim salgado gostoso', 'Pacote', null, 4.00, 8, 'P')
+GO
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Torresmo', 'Un', null, 2.50, 4, 'P')
+GO
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Linguiça frita', 'Un', null, 6.00, 4, 'P')
+GO
+
+-- Inserindo entretenimentos
+insert into entretenimento (descricao, tempo, valor) values ('Sinuca', null, 4.50)
+GO
+insert into entretenimento (descricao, tempo, valor) values ('Jukebox', 60, 13.50)
+GO
+insert into entretenimento (descricao, tempo, valor) values ('Fliperama', 30, 5.00)
+GO
+
+-- Inserindo venda
+insert into venda (clienteID, observacao, total) values(1, 'Fiado', 19.00)
+GO
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 1, 2, 3.50, 'P')
+GO
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 9, 1, 5.00, 'P')
+GO
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 6, 1, 2.50, 'P')
+GO
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 1, 1, 4.50, 'E');
+
+-- Finalizado

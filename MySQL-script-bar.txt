@@ -1,0 +1,122 @@
+-- Iniciado
+
+-- Criando banco
+create database bar;
+
+use bar;
+
+-- Criando tabelas
+CREATE TABLE `cliente` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nome` varchar(50) NOT NULL,
+  `idade` int DEFAULT NULL,
+  `recorde` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `entretenimento` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(50) NOT NULL,
+  `tempo` int DEFAULT NULL,
+  `valor` decimal(4,2) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `produto` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(50) NOT NULL,
+  `unidade` varchar(10) NOT NULL,
+  `volume` decimal(5,3) DEFAULT NULL,
+  `valor` decimal(4,2) NOT NULL,
+  `saldoEstoque` int NOT NULL,
+  `tipo` varchar(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `venda` (
+  `numero` int NOT NULL AUTO_INCREMENT,
+  `clienteID` int NOT NULL,
+  `observacao` varchar(100) DEFAULT NULL,
+  `total` decimal(5,2) NOT NULL,
+  PRIMARY KEY (`numero`),
+  KEY `FK_venda_cliente` (`clienteID`),
+  CONSTRAINT `FK_venda_cliente` FOREIGN KEY (`clienteID`) REFERENCES `cliente` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `vendaitens` (
+  `vendaID` int NOT NULL,
+  `produtoID` int DEFAULT NULL,
+  `quantidade` int DEFAULT NULL,
+  `valorProduto` decimal(4,2) DEFAULT NULL,
+  `tipo` varchar(1) DEFAULT NULL,
+  KEY `FK_vendaItens_venda` (`vendaID`),
+  CONSTRAINT `FK_vendaItens_venda` FOREIGN KEY (`vendaID`) REFERENCES `venda` (`numero`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Criando índices
+CREATE INDEX idx_CLIENTE_ID ON CLIENTE(ID);
+CREATE INDEX idx_PRODUTO_ID ON PRODUTO(ID);
+CREATE INDEX idx_ENTRETENIMENTO_ID ON ENTRETENIMENTO(ID);
+CREATE INDEX idx_VENDA_ID ON VENDA(NUMERO);
+
+-- Criando views
+create view pedidoClienteNome as 
+select numero, 
+	   clienteID, 
+       nome, 
+       observacao, 
+       total 
+from venda 
+left join cliente on cliente.id = venda.clienteID;
+
+create view vendaItensDescricao as 
+select vi.vendaID,
+	   vi.produtoID,
+       case when vi.tipo = 'p' then p.descricao else e.descricao end as descricao, 
+       vi.quantidade, 
+       vi.valorProduto,
+	 vi.tipo
+from vendaItens vi 
+left join produto p on p.id = vi.produtoID
+left join entretenimento e on e.id = vi.produtoID;
+
+-- Criando papeis e passando ao usuario
+create role 'admin';
+grant all privileges on bar.* to 'admin';
+GRANT 'admin' TO 'root'@'localhost';
+
+-- Inserindo clientes no banco
+insert into cliente (nome, idade, recorde) values ('Toninho da Silva',43,11);
+insert into cliente (nome, idade, recorde) values ('Bette Ferreira',52,16);
+insert into cliente (nome, idade, recorde) values ('Duduzinho do Campo',38,6);
+insert into cliente (nome, idade, recorde) values ('Zé da Villa',65,23);
+insert into cliente (nome, idade, recorde) values ('Claudinei',46,15);
+
+-- Inserindo bebidas 
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Cachaça boa', 'Litros', 1.2, 3.50, 15, 'B');
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Pinga Braba', 'Litros', 1, 2.50, 12, 'B');
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Conhaque de Alcatrão', 'Litros', 0.8, 4.00, 10, 'B');
+
+-- Inserindo doces
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Paçoquinha', 'Un', null, 5.00, 10, 'D');
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Doce de abóbora', 'Un', null, 2.50, 6, 'D');
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Pé de moleque', 'Un', null, 2.00, 5, 'D');
+
+-- Inserindo petiscos
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Amendoim salgado gostoso', 'Pacote', null, 4.00, 8, 'P');
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Torresmo', 'Un', null, 2.50, 4, 'P');
+insert into produto (descricao, unidade, volume, valor, saldoEstoque, tipo) values ('Linguiça frita', 'Un', null, 6.00, 4, 'P');
+
+-- Inserindo entretenimentos
+insert into entretenimento (descricao, tempo, valor) values ('Sinuca', null, 4.50);
+insert into entretenimento (descricao, tempo, valor) values ('Jukebox', 60, 13.50);
+insert into entretenimento (descricao, tempo, valor) values ('Fliperama', 30, 5.00);
+
+-- Inserindo venda
+insert into venda (clienteID, observacao, total) values(1, 'Fiado', 19.00);
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 1, 2, 3.50, 'P');
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 9, 1, 5.00, 'P');
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 6, 1, 2.50, 'P');
+insert into vendaItens (vendaID, produtoID, quantidade, valorProduto, tipo) values (1, 1, 1, 4.50, 'E');
+
+-- Finalizado

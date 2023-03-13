@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "9139a0c9-abee-4862-bcb1-67c0476ff58f": {
+      "ProjectGuid": "9139a0c9-abee-4862-bcb1-67c0476ff58f",
+      "DisplayName": "Bar",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
